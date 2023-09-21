@@ -1,26 +1,29 @@
 blueprint:
-  name: Open and Lock on Return Home
-  description: Opens the garage door and unlocks the front door when returning home, then automatically locks/closes after a delay.
+  name: Open and Lock on Return Home for Multiple Persons and Doors
+  description: Opens multiple garage doors and unlocks multiple doors when any selected person returns home, then automatically locks/closes after a delay.
   domain: automation
   input:
-    person_entity:
-      name: Person Entity
-      description: Entity for the person this automation applies to.
+    person_entities:
+      name: Person Entities
+      description: Entities for the persons this automation applies to.
       selector:
         entity:
           domain: person
-    garage_door:
-      name: Garage Door Entity
-      description: Entity for your garage door.
+          multiple: true
+    garage_doors:
+      name: Garage Door Entities
+      description: Entities for your garage doors.
       selector:
         entity:
           domain: cover
-    front_door:
-      name: Front Door Entity
-      description: Entity for your front door lock.
+          multiple: true
+    doors:
+      name: Door Entities
+      description: Entities for your door locks.
       selector:
         entity:
           domain: lock
+          multiple: true
     delay_time:
       name: Delay Time (in minutes)
       description: Time to wait before locking/closing doors.
@@ -33,22 +36,26 @@ blueprint:
 
 trigger:
   platform: state
-  entity_id: !input person_entity
+  entity_id: !input "person_entities"
   from: 'not_home'
   to: 'home'
 
 action:
   - service: cover.open_cover
-    entity_id: !input garage_door
+    data:
+      entity_id: !input "garage_doors"
 
   - service: lock.unlock
-    entity_id: !input front_door
+    data:
+      entity_id: !input "doors"
 
   - delay:
       minutes: !input delay_time
 
   - service: cover.close_cover
-    entity_id: !input garage_door
+    data:
+      entity_id: !input "garage_doors"
 
   - service: lock.lock
-    entity_id: !input front_door
+    data:
+      entity_id: !input "doors"
