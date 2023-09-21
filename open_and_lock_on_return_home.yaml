@@ -1,6 +1,6 @@
 blueprint:
-  name: Open and Lock on Return Home for Multiple Persons and Doors
-  description: Opens multiple garage doors and unlocks multiple doors when any selected person returns home, then automatically locks/closes after a delay.
+  name: Open and Lock on Return Home for Multiple Persons and Doors with Optional Garage
+  description: Optionally opens multiple garage doors and unlocks multiple doors when any selected person returns home, then locks/closes after a delay.
   domain: automation
   input:
     person_entities:
@@ -11,12 +11,13 @@ blueprint:
           domain: person
           multiple: true
     garage_doors:
-      name: Garage Door Entities
-      description: Entities for your garage doors.
+      name: Garage Door Entities (Optional)
+      description: Entities for your garage doors (leave empty if not needed).
       selector:
         entity:
           domain: cover
           multiple: true
+          optional: true
     doors:
       name: Door Entities
       description: Entities for your door locks.
@@ -41,9 +42,14 @@ trigger:
   to: 'home'
 
 action:
-  - service: cover.open_cover
-    data:
-      entity_id: !input "garage_doors"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ garage_doors is defined }}"
+        sequence:
+          - service: cover.open_cover
+            data:
+              entity_id: !input "garage_doors"
 
   - service: lock.unlock
     data:
@@ -52,9 +58,14 @@ action:
   - delay:
       minutes: !input delay_time
 
-  - service: cover.close_cover
-    data:
-      entity_id: !input "garage_doors"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ garage_doors is defined }}"
+        sequence:
+          - service: cover.close_cover
+            data:
+              entity_id: !input "garage_doors"
 
   - service: lock.lock
     data:
