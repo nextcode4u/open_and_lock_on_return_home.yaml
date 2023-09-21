@@ -1,0 +1,54 @@
+blueprint:
+  name: Open and Lock on Return Home
+  description: Opens the garage door and unlocks the front door when returning home, then automatically locks/closes after a delay.
+  domain: automation
+  input:
+    person_entity:
+      name: Person Entity
+      description: Entity for the person this automation applies to.
+      selector:
+        entity:
+          domain: person
+    garage_door:
+      name: Garage Door Entity
+      description: Entity for your garage door.
+      selector:
+        entity:
+          domain: cover
+    front_door:
+      name: Front Door Entity
+      description: Entity for your front door lock.
+      selector:
+        entity:
+          domain: lock
+    delay_time:
+      name: Delay Time (in minutes)
+      description: Time to wait before locking/closing doors.
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 30
+          unit_of_measurement: "minutes"
+
+trigger:
+  platform: state
+  entity_id: !input person_entity
+  from: 'not_home'
+  to: 'home'
+
+action:
+  - service: cover.open_cover
+    entity_id: !input garage_door
+
+  - service: lock.unlock
+    entity_id: !input front_door
+
+  - delay:
+      minutes: !input delay_time
+
+  - service: cover.close_cover
+    entity_id: !input garage_door
+
+  - service: lock.lock
+    entity_id: !input front_door
