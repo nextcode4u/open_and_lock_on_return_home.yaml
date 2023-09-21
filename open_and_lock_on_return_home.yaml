@@ -12,12 +12,12 @@ blueprint:
           multiple: true
     garage_doors:
       name: Garage Door Entities (Optional)
-      description: Entities for your garage doors (leave empty if not needed).
+      description: Entities for your garage doors. Select "No Garage Door" if not needed.
+      default: "input_boolean.no_garage_door"
       selector:
         entity:
           domain: cover
           multiple: true
-          optional: true
     doors:
       name: Door Entities
       description: Entities for your door locks.
@@ -45,7 +45,7 @@ action:
   - choose:
       - conditions:
           - condition: template
-            value_template: "{{ garage_doors is defined }}"
+            value_template: "{{ 'input_boolean.no_garage_door' not in garage_doors }}"
         sequence:
           - service: cover.open_cover
             data:
@@ -61,7 +61,7 @@ action:
   - choose:
       - conditions:
           - condition: template
-            value_template: "{{ garage_doors is defined }}"
+            value_template: "{{ 'input_boolean.no_garage_door' not in garage_doors }}"
         sequence:
           - service: cover.close_cover
             data:
